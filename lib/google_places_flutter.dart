@@ -1,14 +1,11 @@
 library google_places_flutter;
 
-import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_places_flutter/model/place_details.dart';
 import 'package:google_places_flutter/model/place_type.dart';
 import 'package:google_places_flutter/model/prediction.dart';
-
-import 'package:rxdart/subjects.dart';
-import 'package:dio/dio.dart';
+import 'package:google_places_flutter/utils/predictions.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'DioErrorHandler.dart';
@@ -54,7 +51,8 @@ class GooglePlaceAutoCompleteTextField extends StatefulWidget {
       this.containerHorizontalPadding,
       this.containerVerticalPadding,
       this.focusNode,
-      this.placeType,this.language='en'});
+      this.placeType,
+      this.language = 'en'});
 
   @override
   _GooglePlaceAutoCompleteTextFieldState createState() =>
@@ -121,67 +119,17 @@ class _GooglePlaceAutoCompleteTextFieldState
   }
 
   getLocation(String text) async {
-    String apiURL =
-        "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&key=${widget.googleAPIKey}&language=${widget.language}";
-
-    if (widget.countries != null) {
-      // in
-
-      for (int i = 0; i < widget.countries!.length; i++) {
-        String country = widget.countries![i];
-
-        if (i == 0) {
-          apiURL = apiURL + "&components=country:$country";
-        } else {
-          apiURL = apiURL + "|" + "country:" + country;
-        }
-      }
-    }
-    if (widget.placeType != null) {
-      apiURL += "&types=${widget.placeType?.apiString}";
-    }
-
-    if (_cancelToken?.isCancelled == false) {
-      _cancelToken?.cancel();
-      _cancelToken = CancelToken();
-    }
-
-    print("urlll $apiURL");
     try {
-      String proxyURL = "https://cors-anywhere.herokuapp.com/";
-      String url = kIsWeb ? proxyURL + apiURL : apiURL;
-
-      /// Add the custom header to the options
-      final options = kIsWeb
-          ? Options(headers: {"x-requested-with": "XMLHttpRequest"})
-          : null;
-      Response response = await _dio.get(url);
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-      Map map = response.data;
-      if (map.containsKey("error_message")) {
-        throw response.data;
-      }
-
-      PlacesAutocompleteResponse subscriptionResponse =
-          PlacesAutocompleteResponse.fromJson(response.data);
-
-      if (text.length == 0) {
-        alPredictions.clear();
-        this._overlayEntry!.remove();
-        return;
-      }
-
-      isSearched = false;
-      alPredictions.clear();
-      if (subscriptionResponse.predictions!.length > 0 &&
-          (widget.textEditingController.text.toString().trim()).isNotEmpty) {
-        alPredictions.addAll(subscriptionResponse.predictions!);
-      }
-
+      PlacesUtils.getPredictions(
+        text,
+        googleAPIKey: widget.googleAPIKey,
+        countries: widget.countries,
+        language: widget.language ?? 'en',
+        placeType: widget.placeType,
+      );
       this._overlayEntry = null;
       this._overlayEntry = this._createOverlayEntry();
-      Overlay.of(context)!.insert(this._overlayEntry!);
+      Overlay.of(context).insert(this._overlayEntry!);
     } catch (e) {
       var errorHandler = ErrorHandler.internal().handleError(e);
       _showSnackBar("${errorHandler.message}");
@@ -203,7 +151,7 @@ class _GooglePlaceAutoCompleteTextFieldState
   }
 
   OverlayEntry? _createOverlayEntry() {
-    if (context != null && context.findRenderObject() != null) {
+    if (context.findRenderObject() != null) {
       RenderBox renderBox = context.findRenderObject() as RenderBox;
       var size = renderBox.size;
       var offset = renderBox.localToGlobal(Offset.zero);
@@ -248,15 +196,14 @@ class _GooglePlaceAutoCompleteTextFieldState
                 ),
               ));
     }
+    return null;
   }
 
   removeOverlay() {
     alPredictions.clear();
     this._overlayEntry = this._createOverlayEntry();
-    if (context != null) {
-      Overlay.of(context).insert(this._overlayEntry!);
-      this._overlayEntry!.markNeedsBuild();
-    }
+    Overlay.of(context).insert(this._overlayEntry!);
+    this._overlayEntry!.markNeedsBuild();
   }
 
   Future<Response?> getPlaceDetailsFromPlaceId(Prediction prediction) async {
@@ -279,6 +226,7 @@ class _GooglePlaceAutoCompleteTextFieldState
       var errorHandler = ErrorHandler.internal().handleError(e);
       _showSnackBar("${errorHandler.message}");
     }
+    return null;
   }
 
   void clearData() {
