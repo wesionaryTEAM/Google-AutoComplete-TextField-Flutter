@@ -91,9 +91,9 @@ class PlacesUtils {
       final lat = placeDetails.result!.geometry!.location!.lat.toString();
       final lng = placeDetails.result!.geometry!.location!.lng.toString();
       return {
-        'id': placeId,
-        'lat': lat,
-        'lng': lng,
+        'place_id': placeId,
+        'latitude': lat,
+        'longitude': lng,
         'name': placeDetails.result!.name ?? '',
       };
     } catch (e) {
