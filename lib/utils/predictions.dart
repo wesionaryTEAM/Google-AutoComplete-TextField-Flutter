@@ -79,7 +79,7 @@ class PlacesUtils {
     }
   }
 
-  static Future<Map<String, String>> getPlaceDetailsFromPlaceId(
+  static Future<Map<String, dynamic>> getPlaceDetailsFromPlaceId(
     String placeId, {
     required String googleAPIKey,
   }) async {
@@ -88,13 +88,13 @@ class PlacesUtils {
     try {
       final response = await _dio.get(url);
       final placeDetails = PlaceDetails.fromJson(response.data);
-      final lat = placeDetails.result!.geometry!.location!.lat.toString();
-      final lng = placeDetails.result!.geometry!.location!.lng.toString();
+      final lat = placeDetails.result!.geometry!.location!.lat;
+      final lng = placeDetails.result!.geometry!.location!.lng;
       return {
         'place_id': placeId,
         'latitude': lat,
         'longitude': lng,
-        'name': placeDetails.result!.name ?? '',
+        'name': placeDetails.result!.name,
       };
     } catch (e) {
       var errorHandler = ErrorHandler.internal().handleError(e);
