@@ -7,18 +7,31 @@ import 'package:google_places_flutter/model/prediction.dart';
 
 class PlacesUtils {
   PlacesUtils._();
+
   static final predictions = <Prediction>[];
   static final _dio = Dio();
+  static String? _apiKey;
+
+  static void initialize(String apiKey) {
+    _apiKey = apiKey;
+  }
+
+  static String _getApiKey() {
+    if (_apiKey == null) {
+      throw Exception("API key is not initialized!");
+    }
+    return _apiKey!;
+  }
 
   static Future<List<Prediction>> getPredictions(
     String text, {
-    required String googleAPIKey,
     List<String>? countries,
     String language = 'en',
     PlaceType? placeType,
   }) async {
-    String apiURL =
-        "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&key=$googleAPIKey&language=$language";
+    final apiKey = _getApiKey();
+    var apiURL =
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&key=$apiKey&language=$language";
 
     if (countries != null) {
       for (int i = 0; i < countries.length; i++) {
@@ -80,11 +93,11 @@ class PlacesUtils {
   }
 
   static Future<Map<String, dynamic>> getPlaceDetailsFromPlaceId(
-    String placeId, {
-    required String googleAPIKey,
-  }) async {
+    String placeId,
+  ) async {
+    final apiKey = _getApiKey();
     var url =
-        "https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${googleAPIKey}";
+        "https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${apiKey}";
     try {
       final response = await _dio.get(url);
       final placeDetails = PlaceDetails.fromJson(response.data);
