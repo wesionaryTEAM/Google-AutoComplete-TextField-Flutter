@@ -103,11 +103,15 @@ class PlacesUtils {
       final placeDetails = PlaceDetails.fromJson(response.data);
       final lat = placeDetails.result!.geometry!.location!.lat;
       final lng = placeDetails.result!.geometry!.location!.lng;
+      final photoRef = placeDetails.result!.photos != null
+          ? placeDetails.result!.photos![0].photoReference
+          : null;
       return {
         'place_id': placeId,
         'latitude': lat,
         'longitude': lng,
         'name': placeDetails.result!.name,
+        'photo_ref': photoRef,
       };
     } catch (e) {
       var errorHandler = ErrorHandler.internal().handleError(e);
