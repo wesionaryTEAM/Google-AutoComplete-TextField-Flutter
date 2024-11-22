@@ -110,7 +110,7 @@ class PlacesUtils {
         'place_id': placeId,
         'latitude': lat,
         'longitude': lng,
-        'name': placeDetails.result!.name,
+        'name': placeDetails.result!.formattedAddress,
         'photo_ref': photoRef,
       };
     } catch (e) {
