@@ -94,10 +94,11 @@ class PlacesUtils {
 
   static Future<Map<String, dynamic>> getPlaceDetailsFromPlaceId(
     String placeId,
+    String language,
   ) async {
     final apiKey = _getApiKey();
     var url =
-        "https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${apiKey}";
+        "https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${apiKey}&language=${language}";
     try {
       final response = await _dio.get(url);
       final placeDetails = PlaceDetails.fromJson(response.data);
