@@ -97,21 +97,41 @@ class PlacesUtils {
     String language,
   ) async {
     final apiKey = _getApiKey();
-    var url =
-        "https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${apiKey}&language=${language}";
+    final url =
+        "https://maps.googleapis.com/maps/api/place/details/json?placeid=$placeId&key=$apiKey&language=$language";
+
     try {
       final response = await _dio.get(url);
       final placeDetails = PlaceDetails.fromJson(response.data);
-      final lat = placeDetails.result!.geometry!.location!.lat;
-      final lng = placeDetails.result!.geometry!.location!.lng;
-      final photoRef = placeDetails.result!.photos != null
-          ? placeDetails.result!.photos![0].photoReference
+      final result = placeDetails.result!;
+      final lat = result.geometry!.location!.lat;
+      final lng = result.geometry!.location!.lng;
+      final photoRef = result.photos?.isNotEmpty == true
+          ? result.photos![0].photoReference
           : null;
+
+      // Extracting address components
+      final components = result.addressComponents;
+
+      String? getComponentByType(String type) {
+        final comp = components?.where((c) => c.types!.contains(type)).toList();
+        return comp!.isNotEmpty ? comp.first.longName : null;
+      }
+
+      final ward = getComponentByType('sublocality_level_1');
+      final street = getComponentByType('route');
+      final number = getComponentByType('street_number');
+      final building = getComponentByType('premise');
+
+      final userAddress = [ward, street, number, building]
+          .where((e) => e != null && e.isNotEmpty)
+          .join(' ');
+
       return {
         'place_id': placeId,
         'latitude': lat,
         'longitude': lng,
-        'name': placeDetails.result!.vicinity,
+        'name': userAddress.isNotEmpty ? userAddress : result.vicinity,
         'photo_ref': photoRef,
       };
     } catch (e) {
