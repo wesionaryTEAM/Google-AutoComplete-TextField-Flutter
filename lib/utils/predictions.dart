@@ -118,12 +118,24 @@ class PlacesUtils {
         return comp!.isNotEmpty ? comp.first.longName : null;
       }
 
-      final ward = getComponentByType('sublocality_level_1');
-      final street = getComponentByType('route');
-      final number = getComponentByType('street_number');
-      final building = getComponentByType('premise');
+      final prefecture = getComponentByType('administrative_area_level_1');
+      final ward = getComponentByType(
+        'locality',
+      );
+      final area = getComponentByType(
+        'sublocality_level_2',
+      );
+      final block = getComponentByType(
+        'sublocality_level_3',
+      );
+      final subBlock = getComponentByType(
+        'sublocality_level_4',
+      );
+      final building = getComponentByType(
+        'premise',
+      );
 
-      final userAddress = [ward, street, number, building]
+      String userAddress = [prefecture, ward, area, block, subBlock, building]
           .where((e) => e != null && e.isNotEmpty)
           .join(' ');
 
