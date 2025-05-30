@@ -111,7 +111,7 @@ class PlacesUtils {
         'place_id': placeId,
         'latitude': lat,
         'longitude': lng,
-        'name': placeDetails.result!.formattedAddress,
+        'name': placeDetails.result!.vicinity,
         'photo_ref': photoRef,
       };
     } catch (e) {
