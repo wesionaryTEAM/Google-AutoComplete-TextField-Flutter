@@ -110,40 +110,47 @@ class PlacesUtils {
           ? result.photos![0].photoReference
           : null;
 
-      // Extracting address components
       final components = result.addressComponents;
 
       String? getComponentByType(String type) {
         final comp = components?.where((c) => c.types!.contains(type)).toList();
-        return comp!.isNotEmpty ? comp.first.longName : null;
+        return comp != null && comp.isNotEmpty ? comp.first.longName : null;
       }
 
+      // Enhanced set of components for Japanese addresses
       final prefecture = getComponentByType('administrative_area_level_1');
-      final ward = getComponentByType(
-        'locality',
-      );
-      final area = getComponentByType(
-        'sublocality_level_2',
-      );
-      final block = getComponentByType(
-        'sublocality_level_3',
-      );
-      final subBlock = getComponentByType(
-        'sublocality_level_4',
-      );
-      final building = getComponentByType(
-        'premise',
-      );
+      final city = getComponentByType('locality');
+      final ward = getComponentByType('sublocality_level_1');
+      final neighborhood = getComponentByType('neighborhood');
+      final street = getComponentByType('route');
+      final streetNumber = getComponentByType('street_number');
+      final block = getComponentByType('sublocality_level_2');
+      final subBlock = getComponentByType('sublocality_level_3');
+      final building = getComponentByType('premise');
+      final poi = getComponentByType('point_of_interest');
 
-      String userAddress = [prefecture, ward, area, block, subBlock, building]
-          .where((e) => e != null && e.isNotEmpty)
-          .join(' ');
+      // Construct address from all meaningful parts
+      final parts = [
+        prefecture,
+        city,
+        ward,
+        neighborhood,
+        street,
+        streetNumber,
+        block,
+        subBlock,
+        building,
+        poi,
+      ];
+
+      String userAddress =
+          parts.where((e) => e != null && e.trim().isNotEmpty).join(' ');
 
       return {
         'place_id': placeId,
         'latitude': lat,
         'longitude': lng,
-        'name': userAddress.isNotEmpty ? userAddress : result.vicinity,
+        'name': userAddress.isNotEmpty ? userAddress : result.vicinity ?? '',
         'photo_ref': photoRef,
       };
     } catch (e) {
